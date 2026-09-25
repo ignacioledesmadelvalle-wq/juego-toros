@@ -20,6 +20,12 @@ export const CONFIG = {
   distanciaLlegadaCasa: 90,
   distanciaRecogerMoneda: 55,
 
+  botas: {
+    escala: 0.15,
+    duracionSigilo: 8000, // ms que dura el efecto silencioso
+    distanciaRecoger: 55,
+  },
+
   toro: {
     escala: 0.45,
     tiempoDormidoBase: 14000, // ms hasta que se despierta solo (nivel 1)

@@ -15,6 +15,7 @@ export class EscenaJuego extends Phaser.Scene {
     this.load.image('casa', 'assets/img/casa.png');
     this.load.image('cueva', 'assets/img/cueva.png');
     this.load.image('moneda', 'assets/img/moneda.png');
+    this.load.image('botas-silenciosas', 'assets/img/botas-silenciosas.png');
     this.load.image('toro-dormido', 'assets/img/toro-dormido.png');
     this.load.image('toro-despierto', 'assets/img/toro-despierto.png');
     this.load.image('toro-cargando', 'assets/img/toro-cargando.png');
@@ -43,7 +44,12 @@ export class EscenaJuego extends Phaser.Scene {
     this.monedas = [this.add.image(cuevaX, centroY + 40, 'moneda').setScale(CONFIG.escalaMoneda)];
 
     // Nivel 1: un solo toro durmiendo entre la casa y la cueva.
-    this.toros = [new Toro(this, (casaX + cuevaX) / 2, centroY - 150)];
+    const toroX = (casaX + cuevaX) / 2;
+    this.toros = [new Toro(this, toroX, centroY - 150)];
+
+    // Botas silenciosas en el campo, antes de llegar al toro.
+    this.botas = [this.add.image(casaX + (toroX - casaX) * 0.6, centroY + 120, 'botas-silenciosas').setScale(CONFIG.botas.escala)];
+    this.tiempoSigiloRestante = 0;
 
     this.jugador = this.physics.add.sprite(casaX + 120, centroY, 'granjero');
     this.jugador.setScale(CONFIG.escalaJugador);
@@ -59,6 +65,19 @@ export class EscenaJuego extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(1000);
     this.actualizarHUD();
+
+    this.barraSigiloFondo = this.add
+      .rectangle(16, 54, 180, 18, 0x000000, 0.4)
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setDepth(1000)
+      .setVisible(false);
+    this.barraSigilo = this.add
+      .rectangle(18, 56, 176, 14, 0x7fe3ff, 1)
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setDepth(1001)
+      .setVisible(false);
 
     this.textoNivelCompletado = this.add
       .text(CONFIG.ancho / 2, CONFIG.alto / 2, '¡Nivel completado!', {
@@ -117,9 +136,30 @@ export class EscenaJuego extends Phaser.Scene {
     }
   }
 
+  revisarBotas(delta) {
+    for (const bota of this.botas) {
+      if (bota.active && Phaser.Math.Distance.Between(this.jugador.x, this.jugador.y, bota.x, bota.y) < CONFIG.botas.distanciaRecoger) {
+        bota.destroy();
+        this.tiempoSigiloRestante = CONFIG.botas.duracionSigilo;
+      }
+    }
+
+    if (this.tiempoSigiloRestante > 0) {
+      this.tiempoSigiloRestante = Math.max(0, this.tiempoSigiloRestante - delta);
+      const proporcion = this.tiempoSigiloRestante / CONFIG.botas.duracionSigilo;
+      this.barraSigilo.width = 176 * proporcion;
+      this.barraSigiloFondo.setVisible(true);
+      this.barraSigilo.setVisible(true);
+    } else {
+      this.barraSigiloFondo.setVisible(false);
+      this.barraSigilo.setVisible(false);
+    }
+  }
+
   revisarToros(delta) {
+    const sigiloso = this.tiempoSigiloRestante > 0;
     for (const toro of this.toros) {
-      toro.actualizar(delta, this.jugador.x, this.jugador.y);
+      toro.actualizar(delta, this.jugador.x, this.jugador.y, sigiloso);
       if (toro.atacando && toro.distanciaA(this.jugador.x, this.jugador.y) < CONFIG.toro.radioAtrapar) {
         this.perderNivel();
       }
@@ -167,6 +207,7 @@ export class EscenaJuego extends Phaser.Scene {
 
     this.revisarMonedas();
     this.revisarLlegadaACasa();
+    this.revisarBotas(delta);
     this.revisarToros(delta);
   }
 }

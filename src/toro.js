@@ -40,9 +40,9 @@ export class Toro {
     return this.estado === ESTADO.DESPIERTO || this.estado === ESTADO.CARGANDO;
   }
 
-  actualizar(delta, jugadorX, jugadorY) {
+  actualizar(delta, jugadorX, jugadorY, jugadorSigiloso) {
     if (this.estado === ESTADO.DORMIDO || this.estado === ESTADO.ALERTA) {
-      const cerca = Phaser.Math.Distance.Between(this.xBase, this.yBase, jugadorX, jugadorY) < CONFIG.toro.radioRuido;
+      const cerca = !jugadorSigiloso && Phaser.Math.Distance.Between(this.xBase, this.yBase, jugadorX, jugadorY) < CONFIG.toro.radioRuido;
       this.tiempoParaDespertar -= delta * (cerca ? CONFIG.toro.multiplicadorRuido : 1);
 
       if (this.estado === ESTADO.DORMIDO && this.tiempoParaDespertar <= CONFIG.toro.tiempoAviso) {
