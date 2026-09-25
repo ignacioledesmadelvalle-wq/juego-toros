@@ -9,11 +9,11 @@ const ESTADO = {
 
 // Toro dormido -> avisa (tiembla + "!") -> se despierta y bufa -> carga hacia el jugador.
 export class Toro {
-  constructor(scene, x, y) {
+  constructor(scene, x, y, tiempoDormidoInicial = CONFIG.toro.tiempoDormidoBase) {
     this.xBase = x;
     this.yBase = y;
     this.estado = ESTADO.DORMIDO;
-    this.tiempoParaDespertar = CONFIG.toro.tiempoDormidoBase;
+    this.tiempoParaDespertar = tiempoDormidoInicial;
     this.tiempoEnEstado = 0;
 
     this.sprite = scene.add.sprite(x, y, 'toro-dormido').setScale(CONFIG.toro.escala);

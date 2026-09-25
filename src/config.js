@@ -9,8 +9,11 @@ export const CONFIG = {
 
   escalaPasto: 0.5, // tamaño del mosaico de pasto (512x512 -> 256x256 en pantalla)
 
+  totalNiveles: 10,
+
   mundo: {
-    ancho: 2600, // el mapa es más ancho que la pantalla: casa en un extremo, cueva en el otro
+    anchoBase: 2600, // ancho del mapa en el nivel 1
+    incrementoPorNivel: 150, // cuánto más ancho es el mapa por cada nivel
     alto: 720,
   },
   margenCasaCueva: 220, // separación desde el borde del mapa
@@ -29,6 +32,8 @@ export const CONFIG = {
   toro: {
     escala: 0.45,
     tiempoDormidoBase: 14000, // ms hasta que se despierta solo (nivel 1)
+    reduccionPorNivel: 800, // ms menos por cada nivel (se despiertan más rápido)
+    tiempoDormidoMinimo: 5000,
     tiempoAviso: 1500, // ms mostrando "!" y temblando antes de despertarse del todo
     tiempoBufido: 500, // pausa parado (bufando) antes de cargar
     velocidadCarga: 210,
