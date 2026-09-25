@@ -11,11 +11,14 @@ const ESTADO = {
 // Toro dormido -> avisa (tiembla + "!") -> se despierta y bufa -> carga hacia el jugador.
 export class Toro {
   constructor(scene, x, y, tiempoDormidoInicial = CONFIG.toro.tiempoDormidoBase) {
+    this.scene = scene;
     this.xBase = x;
     this.yBase = y;
     this.estado = ESTADO.DORMIDO;
     this.tiempoParaDespertar = tiempoDormidoInicial;
     this.tiempoEnEstado = 0;
+    this.tiempoCargando = 0;
+    this.proximoPolvo = 0;
 
     this.sprite = scene.add.sprite(x, y, 'toro-dormido').setScale(CONFIG.toro.escala);
     this.texto = scene.add
@@ -91,6 +94,30 @@ export class Toro {
     const { textura, espejado } = texturaSegunVista('toro-cargando', dx, dy);
     if (this.sprite.texture.key !== textura) this.sprite.setTexture(textura);
     this.sprite.setFlipX(espejado);
+
+    // Un poco de "vida" mientras galopa: se estira y achica, y deja polvito.
+    this.tiempoCargando += delta;
+    const rebote = Math.sin(this.tiempoCargando * CONFIG.toro.frecuenciaGalope) * CONFIG.toro.amplitudGalope;
+    this.sprite.setScale(CONFIG.toro.escala * (1 + rebote), CONFIG.toro.escala * (1 - rebote));
+
+    this.proximoPolvo -= delta;
+    if (this.proximoPolvo <= 0) {
+      this.proximoPolvo = CONFIG.toro.intervaloPolvo;
+      this.crearPolvo(dx, dy);
+    }
+  }
+
+  crearPolvo(dx, dy) {
+    const x = this.sprite.x - dx * 30 + Phaser.Math.Between(-8, 8);
+    const y = this.sprite.y - dy * 30 + Phaser.Math.Between(-6, 6);
+    const nube = this.scene.add.circle(x, y, 7, 0xe8d6a8, 0.7);
+    this.scene.tweens.add({
+      targets: nube,
+      scale: 2.4,
+      alpha: 0,
+      duration: 400,
+      onComplete: () => nube.destroy(),
+    });
   }
 
   distanciaA(x, y) {

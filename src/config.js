@@ -43,6 +43,9 @@ export const CONFIG = {
     radioRuido: 160, // si el jugador está más cerca que esto, se despierta más rápido
     multiplicadorRuido: 5,
     radioAtrapar: 55, // distancia para considerar que el toro te tocó
+    amplitudGalope: 0.12, // cuánto se achica/estira al galopar
+    frecuenciaGalope: 0.02, // qué tan rápido rebota al galopar
+    intervaloPolvo: 90, // ms entre nubecitas de polvo mientras carga
   },
 
   joystick: {
