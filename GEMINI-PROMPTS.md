@@ -99,6 +99,27 @@ en pleno galope, cola levantada, nubes de polvo saliendo de atrás y de las
 patas para mostrar velocidad.
 ```
 
+## Logo simple, sin escenita — `logo.png`
+
+El logo actual quedó bien dibujado, pero trae su propia escenita (pasto y un
+toro dormido) y eso duplica lo que ya tiene `fondo-inicio.png` (que también
+tiene toros dormidos, casa y cueva). Juntos se ven sobrecargados. Pedí una
+versión del logo que sea **solo el título**, para que se apoye limpio arriba
+del fondo de inicio:
+
+```
+Logotipo de un juego infantil que dice "El mundo de Gliff" en letras de
+madera talladas con contorno dorado, estilo cartel de juego para chicos,
+igual al que ya generaste antes PERO sin ninguna escenita alrededor: sin
+pasto, sin toro, sin césped en la base, sin fondo de ningún tipo. Solo el
+título con su sombra propia, centrado, fondo completamente transparente
+(PNG), recortado bien ajustado al texto (sin espacio vacío de sobra
+alrededor).
+```
+
+Guardala como `logo.png` (reemplaza a la actual; la vieja queda guardada en
+`assets/img/original/`).
+
 ## Después de generarlas
 
 1. Guardá cada imagen en `assets/img/` con el nombre indicado arriba.
