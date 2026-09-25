@@ -47,11 +47,11 @@ export class Toro {
   actualizar(delta, jugadorX, jugadorY, jugadorSigiloso) {
     if (this.estado === ESTADO.DORMIDO || this.estado === ESTADO.ALERTA) {
       const cerca = Phaser.Math.Distance.Between(this.xBase, this.yBase, jugadorX, jugadorY) < CONFIG.toro.radioRuido;
-      // Cerca y sin botas: se despierta más rápido. Cerca y con botas: no pasa
-      // nada (podés quedarte al lado tranquilo). Lejos: el reloj propio sigue
-      // corriendo igual, tengas botas o no.
+      // Con botas puestas nadie se despierta, estés cerca o lejos. Sin botas,
+      // cerca se despierta más rápido y lejos el reloj propio sigue corriendo.
       let factor = 1;
-      if (cerca) factor = jugadorSigiloso ? 0 : CONFIG.toro.multiplicadorRuido;
+      if (jugadorSigiloso) factor = 0;
+      else if (cerca) factor = CONFIG.toro.multiplicadorRuido;
       this.tiempoParaDespertar -= delta * factor;
 
       if (this.estado === ESTADO.DORMIDO && this.tiempoParaDespertar <= CONFIG.toro.tiempoAviso) {
