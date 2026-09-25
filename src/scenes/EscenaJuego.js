@@ -1,5 +1,6 @@
 import { CONFIG } from '../config.js';
 import { Joystick } from '../joystick.js';
+import { Toro } from '../toro.js';
 
 // Por ahora el personaje es siempre el granjero. Elegir entre granjero y
 // granjera se agrega en una etapa más adelante (pantalla de selección).
@@ -14,6 +15,9 @@ export class EscenaJuego extends Phaser.Scene {
     this.load.image('casa', 'assets/img/casa.png');
     this.load.image('cueva', 'assets/img/cueva.png');
     this.load.image('moneda', 'assets/img/moneda.png');
+    this.load.image('toro-dormido', 'assets/img/toro-dormido.png');
+    this.load.image('toro-despierto', 'assets/img/toro-despierto.png');
+    this.load.image('toro-cargando', 'assets/img/toro-cargando.png');
   }
 
   create() {
@@ -37,6 +41,9 @@ export class EscenaJuego extends Phaser.Scene {
     this.totalMonedas = 1;
     this.monedasRecolectadas = 0;
     this.monedas = [this.add.image(cuevaX, centroY + 40, 'moneda').setScale(CONFIG.escalaMoneda)];
+
+    // Nivel 1: un solo toro durmiendo entre la casa y la cueva.
+    this.toros = [new Toro(this, (casaX + cuevaX) / 2, centroY - 150)];
 
     this.jugador = this.physics.add.sprite(casaX + 120, centroY, 'granjero');
     this.jugador.setScale(CONFIG.escalaJugador);
@@ -66,7 +73,21 @@ export class EscenaJuego extends Phaser.Scene {
       .setDepth(1000)
       .setVisible(false);
 
+    this.textoPerdiste = this.add
+      .text(CONFIG.ancho / 2, CONFIG.alto / 2, '¡Te atrapó el toro!', {
+        fontFamily: 'sans-serif',
+        fontSize: '48px',
+        color: '#ffffff',
+        stroke: '#7a1010',
+        strokeThickness: 8,
+      })
+      .setScrollFactor(0)
+      .setOrigin(0.5)
+      .setDepth(1000)
+      .setVisible(false);
+
     this.nivelCompletado = false;
+    this.jugadorAtrapado = false;
 
     this.cursores = this.input.keyboard.createCursorKeys();
     this.teclasWasd = this.input.keyboard.addKeys('W,A,S,D');
@@ -96,8 +117,25 @@ export class EscenaJuego extends Phaser.Scene {
     }
   }
 
-  update() {
-    if (this.nivelCompletado) {
+  revisarToros(delta) {
+    for (const toro of this.toros) {
+      toro.actualizar(delta, this.jugador.x, this.jugador.y);
+      if (toro.atacando && toro.distanciaA(this.jugador.x, this.jugador.y) < CONFIG.toro.radioAtrapar) {
+        this.perderNivel();
+      }
+    }
+  }
+
+  perderNivel() {
+    if (this.jugadorAtrapado || this.nivelCompletado) return;
+    this.jugadorAtrapado = true;
+    this.jugador.setVelocity(0, 0);
+    this.textoPerdiste.setVisible(true);
+    this.time.delayedCall(2000, () => this.scene.restart());
+  }
+
+  update(time, delta) {
+    if (this.nivelCompletado || this.jugadorAtrapado) {
       this.jugador.setVelocity(0, 0);
       return;
     }
@@ -129,5 +167,6 @@ export class EscenaJuego extends Phaser.Scene {
 
     this.revisarMonedas();
     this.revisarLlegadaACasa();
+    this.revisarToros(delta);
   }
 }

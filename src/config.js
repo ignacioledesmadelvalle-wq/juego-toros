@@ -20,6 +20,17 @@ export const CONFIG = {
   distanciaLlegadaCasa: 90,
   distanciaRecogerMoneda: 55,
 
+  toro: {
+    escala: 0.45,
+    tiempoDormidoBase: 14000, // ms hasta que se despierta solo (nivel 1)
+    tiempoAviso: 1500, // ms mostrando "!" y temblando antes de despertarse del todo
+    tiempoBufido: 500, // pausa parado (bufando) antes de cargar
+    velocidadCarga: 210,
+    radioRuido: 160, // si el jugador está más cerca que esto, se despierta más rápido
+    multiplicadorRuido: 5,
+    radioAtrapar: 55, // distancia para considerar que el toro te tocó
+  },
+
   joystick: {
     radioBase: 60,
     radioMano: 30,
