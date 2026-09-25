@@ -7,11 +7,11 @@ export const CONFIG = {
   incrementoVelocidadPorNivel: 6, // el granjero corre un poco más rápido en cada nivel
   incrementoVelocidadMaximo: 60,
   escalaJugador: 0.22, // los dibujos vienen en 512x512, esto los deja de buen tamaño
-  giroMaximoJugador: 80, // grados que se inclina al ir para el costado
 
   escalaPasto: 0.5, // tamaño del mosaico de pasto (512x512 -> 256x256 en pantalla)
 
   totalNiveles: 10,
+  demoraCambioPantalla: 700, // ms de pausa antes de pasar a la pantalla de nivel completado/perdiste
 
   mundo: {
     anchoBase: 2600, // ancho del mapa en el nivel 1

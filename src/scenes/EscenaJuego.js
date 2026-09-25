@@ -1,33 +1,27 @@
 import { CONFIG } from '../config.js';
 import { Joystick } from '../joystick.js';
 import { Toro } from '../toro.js';
+import { cargarNivelGuardado, guardarNivel, estaSilenciado, alternarSilencio } from '../progreso.js';
+import { texturaSegunVista } from '../direccion.js';
 
-const CLAVE_GUARDADO = 'gliff-nivel';
-
-// Por ahora el personaje es siempre el granjero. Elegir entre granjero y
-// granjera se agrega en una etapa más adelante (pantalla de selección).
 export class EscenaJuego extends Phaser.Scene {
   constructor() {
     super('EscenaJuego');
   }
 
   init(data) {
-    this.nivel = (data && data.nivel) || this.cargarNivelGuardado();
-  }
-
-  cargarNivelGuardado() {
-    const guardado = parseInt(localStorage.getItem(CLAVE_GUARDADO), 10);
-    if (!guardado || guardado < 1 || guardado > CONFIG.totalNiveles) return 1;
-    return guardado;
-  }
-
-  guardarNivel(nivel) {
-    localStorage.setItem(CLAVE_GUARDADO, String(nivel));
+    this.nivel = (data && data.nivel) || cargarNivelGuardado();
+    this.personaje = (data && data.personaje) || 'granjero';
   }
 
   preload() {
     this.load.image('pasto', 'assets/img/pasto.png');
     this.load.image('granjero', 'assets/img/granjero.png');
+    this.load.image('granjero-espalda', 'assets/img/granjero-espalda.png');
+    this.load.image('granjero-perfil', 'assets/img/granjero-perfil.png');
+    this.load.image('granjera', 'assets/img/granjera.png');
+    this.load.image('granjera-espalda', 'assets/img/granjera-espalda.png');
+    this.load.image('granjera-perfil', 'assets/img/granjera-perfil.png');
     this.load.image('casa', 'assets/img/casa.png');
     this.load.image('cueva', 'assets/img/cueva.png');
     this.load.image('moneda', 'assets/img/moneda.png');
@@ -35,6 +29,8 @@ export class EscenaJuego extends Phaser.Scene {
     this.load.image('toro-dormido', 'assets/img/toro-dormido.png');
     this.load.image('toro-despierto', 'assets/img/toro-despierto.png');
     this.load.image('toro-cargando', 'assets/img/toro-cargando.png');
+    this.load.image('toro-cargando-espalda', 'assets/img/toro-cargando-espalda.png');
+    this.load.image('toro-cargando-perfil', 'assets/img/toro-cargando-perfil.png');
   }
 
   create() {
@@ -105,7 +101,7 @@ export class EscenaJuego extends Phaser.Scene {
     // El granjero corre un poco más rápido en los niveles altos.
     this.velocidadJugador = CONFIG.velocidadJugador + Math.min(CONFIG.incrementoVelocidadMaximo, CONFIG.incrementoVelocidadPorNivel * (nivel - 1));
 
-    this.jugador = this.physics.add.sprite(casaX + 120, centroY, 'granjero');
+    this.jugador = this.physics.add.sprite(casaX + 120, centroY, this.personaje);
     this.jugador.setScale(CONFIG.escalaJugador);
     // El cuerpo físico solo se usa para no salirse del mapa; recoger la moneda
     // y volver a casa se controla por distancia (más simple y sin sorpresas).
@@ -137,31 +133,27 @@ export class EscenaJuego extends Phaser.Scene {
       .setDepth(1001)
       .setVisible(false);
 
-    this.textoNivelCompletado = this.add
-      .text(CONFIG.ancho / 2, CONFIG.alto / 2, '¡Nivel completado!', {
-        fontFamily: 'sans-serif',
-        fontSize: '56px',
-        color: '#ffffff',
-        stroke: '#2b1d14',
-        strokeThickness: 8,
-      })
+    this.botonSonido = this.add
+      .text(CONFIG.ancho - 32, 20, estaSilenciado() ? '🔇' : '🔊', { fontSize: '34px' })
+      .setOrigin(1, 0)
       .setScrollFactor(0)
-      .setOrigin(0.5)
       .setDepth(1000)
-      .setVisible(false);
+      .setInteractive({ useHandCursor: true });
+    this.botonSonido.on('pointerup', () => {
+      const silenciado = alternarSilencio();
+      this.botonSonido.setText(silenciado ? '🔇' : '🔊');
+    });
 
-    this.textoPerdiste = this.add
-      .text(CONFIG.ancho / 2, CONFIG.alto / 2, '¡Te atrapó el toro!', {
-        fontFamily: 'sans-serif',
-        fontSize: '48px',
-        color: '#ffffff',
-        stroke: '#7a1010',
-        strokeThickness: 8,
-      })
+    this.botonPausa = this.add
+      .text(CONFIG.ancho - 90, 20, '⏸️', { fontSize: '34px' })
+      .setOrigin(1, 0)
       .setScrollFactor(0)
-      .setOrigin(0.5)
       .setDepth(1000)
-      .setVisible(false);
+      .setInteractive({ useHandCursor: true });
+    this.botonPausa.on('pointerup', () => {
+      this.scene.pause();
+      this.scene.launch('EscenaPausa');
+    });
 
     this.nivelCompletado = false;
     this.jugadorAtrapado = false;
@@ -194,12 +186,16 @@ export class EscenaJuego extends Phaser.Scene {
       this.jugador.setVelocity(0, 0);
 
       const gano = this.nivel >= CONFIG.totalNiveles;
-      this.textoNivelCompletado.setText(gano ? '¡Ganaste los 10 niveles!' : '¡Nivel completado!');
-      this.textoNivelCompletado.setVisible(true);
-
       const siguienteNivel = gano ? 1 : this.nivel + 1;
-      this.guardarNivel(siguienteNivel);
-      this.time.delayedCall(2000, () => this.scene.restart({ nivel: siguienteNivel }));
+      guardarNivel(siguienteNivel);
+
+      this.time.delayedCall(CONFIG.demoraCambioPantalla, () => {
+        if (gano) {
+          this.scene.start('EscenaGanaste');
+        } else {
+          this.scene.start('EscenaNivelCompletado', { nivel: this.nivel, personaje: this.personaje, siguienteNivel });
+        }
+      });
     }
   }
 
@@ -237,8 +233,9 @@ export class EscenaJuego extends Phaser.Scene {
     if (this.jugadorAtrapado || this.nivelCompletado) return;
     this.jugadorAtrapado = true;
     this.jugador.setVelocity(0, 0);
-    this.textoPerdiste.setVisible(true);
-    this.time.delayedCall(2000, () => this.scene.restart({ nivel: this.nivel }));
+    this.time.delayedCall(CONFIG.demoraCambioPantalla, () => {
+      this.scene.start('EscenaPerdiste', { nivel: this.nivel, personaje: this.personaje });
+    });
   }
 
   update(time, delta) {
@@ -268,9 +265,11 @@ export class EscenaJuego extends Phaser.Scene {
 
     this.jugador.setVelocity(dx * this.velocidadJugador, dy * this.velocidadJugador);
 
-    // Se inclina hacia el costado al que camina (sin llegar a quedar cabeza abajo
-    // cuando va para arriba, ya que el dibujo solo mira hacia la cámara).
-    this.jugador.rotation = Phaser.Math.DegToRad(CONFIG.giroMaximoJugador) * dx;
+    if (dx !== 0 || dy !== 0) {
+      const { textura, espejado } = texturaSegunVista(this.personaje, dx, dy);
+      if (this.jugador.texture.key !== textura) this.jugador.setTexture(textura);
+      this.jugador.setFlipX(espejado);
+    }
 
     // Si la pestaña estuvo en pausa (por ejemplo, cambiaron de app en la
     // tablet), el siguiente delta puede ser enorme. Lo topeamos para que

@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { texturaSegunVista } from './direccion.js';
 
 const ESTADO = {
   DORMIDO: 'dormido',
@@ -82,9 +83,14 @@ export class Toro {
 
     // Cargando: persigue al jugador en línea recta.
     const angulo = Phaser.Math.Angle.Between(this.sprite.x, this.sprite.y, jugadorX, jugadorY);
-    this.sprite.x += Math.cos(angulo) * CONFIG.toro.velocidadCarga * (delta / 1000);
-    this.sprite.y += Math.sin(angulo) * CONFIG.toro.velocidadCarga * (delta / 1000);
-    this.sprite.rotation = angulo - Math.PI / 2;
+    const dx = Math.cos(angulo);
+    const dy = Math.sin(angulo);
+    this.sprite.x += dx * CONFIG.toro.velocidadCarga * (delta / 1000);
+    this.sprite.y += dy * CONFIG.toro.velocidadCarga * (delta / 1000);
+
+    const { textura, espejado } = texturaSegunVista('toro-cargando', dx, dy);
+    if (this.sprite.texture.key !== textura) this.sprite.setTexture(textura);
+    this.sprite.setFlipX(espejado);
   }
 
   distanciaA(x, y) {
