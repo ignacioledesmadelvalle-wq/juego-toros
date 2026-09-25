@@ -1,5 +1,6 @@
 import { CONFIG } from '../config.js';
 import { cargarNivelGuardado } from '../progreso.js';
+import { reproducirMusica } from '../musica.js';
 
 export class EscenaSeleccion extends Phaser.Scene {
   constructor() {
@@ -10,10 +11,14 @@ export class EscenaSeleccion extends Phaser.Scene {
     this.load.image('granjero', 'assets/img/granjero.png');
     this.load.image('granjera', 'assets/img/granjera.png');
     this.load.image('pasto', 'assets/img/pasto.png');
+    this.load.audio('menu', 'assets/music/menu.mp3');
+    this.load.audio('click', 'assets/sfx/click.mp3');
   }
 
   create() {
     const { ancho, alto } = CONFIG;
+
+    reproducirMusica(this, 'menu');
 
     this.add.tileSprite(ancho / 2, alto / 2, ancho, alto, 'pasto').setTileScale(CONFIG.escalaPasto);
 
@@ -48,6 +53,7 @@ export class EscenaSeleccion extends Phaser.Scene {
     marco.on('pointerover', () => marco.setFillStyle(0xffffff, 0.32));
     marco.on('pointerout', () => marco.setFillStyle(0xffffff, 0.18));
     marco.on('pointerup', () => {
+      this.sound.play('click', { volume: 0.5 });
       this.scene.start('EscenaJuego', { personaje: texturaId, nivel: cargarNivelGuardado() });
     });
   }

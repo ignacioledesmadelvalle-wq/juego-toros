@@ -12,8 +12,15 @@ export class EscenaNivelCompletado extends Phaser.Scene {
     this.siguienteNivel = data.siguienteNivel;
   }
 
+  preload() {
+    this.load.audio('nivel-completado', 'assets/music/nivel-completado.mp3');
+    this.load.audio('click', 'assets/sfx/click.mp3');
+  }
+
   create() {
     const { ancho, alto } = CONFIG;
+
+    this.sound.play('nivel-completado', { volume: 0.6 });
 
     this.add.rectangle(ancho / 2, alto / 2, ancho, alto, 0x1f3d1a, 0.9);
     this.add

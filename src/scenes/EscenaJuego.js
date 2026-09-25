@@ -3,6 +3,7 @@ import { Joystick } from '../joystick.js';
 import { Toro } from '../toro.js';
 import { cargarNivelGuardado, guardarNivel, estaSilenciado, alternarSilencio } from '../progreso.js';
 import { texturaSegunVista } from '../direccion.js';
+import { reproducirMusica, detenerMusica } from '../musica.js';
 
 export class EscenaJuego extends Phaser.Scene {
   constructor() {
@@ -31,9 +32,22 @@ export class EscenaJuego extends Phaser.Scene {
     this.load.image('toro-cargando', 'assets/img/toro-cargando.png');
     this.load.image('toro-cargando-espalda', 'assets/img/toro-cargando-espalda.png');
     this.load.image('toro-cargando-perfil', 'assets/img/toro-cargando-perfil.png');
+
+    this.load.audio('juego', 'assets/music/juego.mp3');
+    this.load.audio('pasos', 'assets/sfx/pasos.mp3');
+    this.load.audio('ronquido', 'assets/sfx/ronquido.ogg');
+    this.load.audio('alerta', 'assets/sfx/alerta.mp3');
+    this.load.audio('mugido', 'assets/sfx/mugido.mp3');
+    this.load.audio('bufido', 'assets/sfx/bufido.wav');
+    this.load.audio('galope', 'assets/sfx/galope.wav');
+    this.load.audio('moneda-sfx', 'assets/sfx/moneda.mp3');
+    this.load.audio('botas-sfx', 'assets/sfx/botas.mp3');
+    this.load.audio('botas-fin', 'assets/sfx/botas-fin.mp3');
   }
 
   create() {
+    reproducirMusica(this, 'juego', 0.35);
+
     const nivel = this.nivel;
     const anchoMundo = CONFIG.mundo.anchoBase + (nivel - 1) * CONFIG.mundo.incrementoPorNivel;
     const altoMundo = CONFIG.mundo.alto;
@@ -85,6 +99,8 @@ export class EscenaJuego extends Phaser.Scene {
       const y = centroY + ((i % 3) - 1) * 150;
       this.toros.push(new Toro(this, x, y, tiempoDormido));
     }
+    this.sonidoRonquido = this.sound.add('ronquido', { loop: true, volume: 0.25 });
+    this.sonidoGalope = this.sound.add('galope', { loop: true, volume: 0.4 });
 
     // Botas silenciosas repartidas por el campo: cada tantos niveles hay un
     // par más, para compensar que también hay más toros que esquivar.
@@ -97,6 +113,16 @@ export class EscenaJuego extends Phaser.Scene {
       this.botas.push(this.add.image(x, y, 'botas-silenciosas').setScale(CONFIG.botas.escala));
     }
     this.tiempoSigiloRestante = 0;
+    this.sonidoPasos = this.sound.add('pasos', { loop: true, volume: 0.5 });
+
+    // Al salir de esta escena (reintentar, siguiente nivel, pausa -> inicio),
+    // hay que destruir los sonidos en loop para que no se acumulen y se pisen
+    // con los de la próxima vez que se cree esta escena.
+    this.events.once('shutdown', () => {
+      this.sonidoPasos.destroy();
+      this.sonidoRonquido.destroy();
+      this.sonidoGalope.destroy();
+    });
 
     // El granjero corre un poco más rápido en los niveles altos.
     this.velocidadJugador = CONFIG.velocidadJugador + Math.min(CONFIG.incrementoVelocidadMaximo, CONFIG.incrementoVelocidadPorNivel * (nivel - 1));
@@ -141,6 +167,7 @@ export class EscenaJuego extends Phaser.Scene {
       .setInteractive({ useHandCursor: true });
     this.botonSonido.on('pointerup', () => {
       const silenciado = alternarSilencio();
+      this.sound.mute = silenciado;
       this.botonSonido.setText(silenciado ? '🔇' : '🔊');
     });
 
@@ -151,6 +178,7 @@ export class EscenaJuego extends Phaser.Scene {
       .setDepth(1000)
       .setInteractive({ useHandCursor: true });
     this.botonPausa.on('pointerup', () => {
+      this.sound.pauseAll();
       this.scene.pause();
       this.scene.launch('EscenaPausa');
     });
@@ -173,6 +201,7 @@ export class EscenaJuego extends Phaser.Scene {
     for (const moneda of this.monedas) {
       if (moneda.active && Phaser.Math.Distance.Between(this.jugador.x, this.jugador.y, moneda.x, moneda.y) < CONFIG.distanciaRecogerMoneda) {
         moneda.destroy();
+        this.sound.play('moneda-sfx', { volume: 0.6 });
         this.monedasRecolectadas += 1;
         this.actualizarHUD();
       }
@@ -184,6 +213,8 @@ export class EscenaJuego extends Phaser.Scene {
     if (Phaser.Math.Distance.Between(this.jugador.x, this.jugador.y, this.casa.x, this.casa.y) < CONFIG.distanciaLlegadaCasa) {
       this.nivelCompletado = true;
       this.jugador.setVelocity(0, 0);
+      detenerMusica();
+      this.detenerSonidosAmbiente();
 
       const gano = this.nivel >= CONFIG.totalNiveles;
       const siguienteNivel = gano ? 1 : this.nivel + 1;
@@ -203,6 +234,7 @@ export class EscenaJuego extends Phaser.Scene {
     for (const bota of this.botas) {
       if (bota.active && Phaser.Math.Distance.Between(this.jugador.x, this.jugador.y, bota.x, bota.y) < CONFIG.botas.distanciaRecoger) {
         bota.destroy();
+        this.sound.play('botas-sfx', { volume: 0.6 });
         this.tiempoSigiloRestante = CONFIG.botas.duracionSigilo;
       }
     }
@@ -213,6 +245,7 @@ export class EscenaJuego extends Phaser.Scene {
       this.barraSigilo.width = 176 * proporcion;
       this.barraSigiloFondo.setVisible(true);
       this.barraSigilo.setVisible(true);
+      if (this.tiempoSigiloRestante === 0) this.sound.play('botas-fin', { volume: 0.6 });
     } else {
       this.barraSigiloFondo.setVisible(false);
       this.barraSigilo.setVisible(false);
@@ -221,18 +254,36 @@ export class EscenaJuego extends Phaser.Scene {
 
   revisarToros(delta) {
     const sigiloso = this.tiempoSigiloRestante > 0;
+    let hayDormidos = false;
+    let hayCargando = false;
     for (const toro of this.toros) {
       toro.actualizar(delta, this.jugador.x, this.jugador.y, sigiloso);
       if (toro.atacando && toro.distanciaA(this.jugador.x, this.jugador.y) < CONFIG.toro.radioAtrapar) {
         this.perderNivel();
       }
+      if (toro.estado === 'dormido') hayDormidos = true;
+      if (toro.estado === 'cargando') hayCargando = true;
     }
+
+    if (hayDormidos && !this.sonidoRonquido.isPlaying) this.sonidoRonquido.play();
+    if (!hayDormidos && this.sonidoRonquido.isPlaying) this.sonidoRonquido.stop();
+
+    if (hayCargando && !this.sonidoGalope.isPlaying) this.sonidoGalope.play();
+    if (!hayCargando && this.sonidoGalope.isPlaying) this.sonidoGalope.stop();
+  }
+
+  detenerSonidosAmbiente() {
+    if (this.sonidoPasos.isPlaying) this.sonidoPasos.stop();
+    if (this.sonidoRonquido.isPlaying) this.sonidoRonquido.stop();
+    if (this.sonidoGalope.isPlaying) this.sonidoGalope.stop();
   }
 
   perderNivel() {
     if (this.jugadorAtrapado || this.nivelCompletado) return;
     this.jugadorAtrapado = true;
     this.jugador.setVelocity(0, 0);
+    detenerMusica();
+    this.detenerSonidosAmbiente();
     this.time.delayedCall(CONFIG.demoraCambioPantalla, () => {
       this.scene.start('EscenaPerdiste', { nivel: this.nivel, personaje: this.personaje });
     });
@@ -241,6 +292,7 @@ export class EscenaJuego extends Phaser.Scene {
   update(time, delta) {
     if (this.nivelCompletado || this.jugadorAtrapado) {
       this.jugador.setVelocity(0, 0);
+      if (this.sonidoPasos.isPlaying) this.sonidoPasos.stop();
       return;
     }
 
@@ -269,6 +321,11 @@ export class EscenaJuego extends Phaser.Scene {
       const { textura, espejado } = texturaSegunVista(this.personaje, dx, dy);
       if (this.jugador.texture.key !== textura) this.jugador.setTexture(textura);
       this.jugador.setFlipX(espejado);
+
+      this.sonidoPasos.setVolume(this.tiempoSigiloRestante > 0 ? 0.15 : 0.5);
+      if (!this.sonidoPasos.isPlaying) this.sonidoPasos.play();
+    } else if (this.sonidoPasos.isPlaying) {
+      this.sonidoPasos.stop();
     }
 
     // Si la pestaña estuvo en pausa (por ejemplo, cambiaron de app en la

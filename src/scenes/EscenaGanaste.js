@@ -7,10 +7,17 @@ export class EscenaGanaste extends Phaser.Scene {
     super('EscenaGanaste');
   }
 
+  preload() {
+    this.load.audio('ganaste', 'assets/music/ganaste.mp3');
+    this.load.audio('click', 'assets/sfx/click.mp3');
+  }
+
   create() {
     guardarNivel(1);
 
     const { ancho, alto } = CONFIG;
+
+    this.sound.play('ganaste', { volume: 0.6 });
 
     this.add.rectangle(ancho / 2, alto / 2, ancho, alto, 0x2b1d14, 0.92);
     this.add

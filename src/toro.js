@@ -58,6 +58,7 @@ export class Toro {
         this.estado = ESTADO.ALERTA;
         this.tiempoEnEstado = 0;
         this.texto.setText('!');
+        this.scene.sound.play('alerta', { volume: 0.5 });
       }
 
       if (this.estado === ESTADO.ALERTA) {
@@ -71,6 +72,7 @@ export class Toro {
         this.sprite.setTexture('toro-despierto');
         this.sprite.setPosition(this.xBase, this.yBase);
         this.texto.setVisible(false);
+        this.scene.sound.play('mugido', { volume: 0.6 });
       }
       return;
     }
@@ -80,6 +82,7 @@ export class Toro {
       if (this.tiempoEnEstado >= CONFIG.toro.tiempoBufido) {
         this.estado = ESTADO.CARGANDO;
         this.sprite.setTexture('toro-cargando');
+        this.scene.sound.play('bufido', { volume: 0.6 });
       }
       return;
     }

@@ -6,8 +6,9 @@ import { EscenaPausa } from './scenes/EscenaPausa.js';
 import { EscenaNivelCompletado } from './scenes/EscenaNivelCompletado.js';
 import { EscenaPerdiste } from './scenes/EscenaPerdiste.js';
 import { EscenaGanaste } from './scenes/EscenaGanaste.js';
+import { estaSilenciado } from './progreso.js';
 
-new Phaser.Game({
+const juego = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'juego',
   width: CONFIG.ancho,
@@ -23,3 +24,5 @@ new Phaser.Game({
   },
   scene: [EscenaInicio, EscenaSeleccion, EscenaJuego, EscenaPausa, EscenaNivelCompletado, EscenaPerdiste, EscenaGanaste],
 });
+
+juego.sound.mute = estaSilenciado();

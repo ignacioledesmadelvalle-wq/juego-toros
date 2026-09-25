@@ -6,6 +6,10 @@ export class EscenaPausa extends Phaser.Scene {
     super('EscenaPausa');
   }
 
+  preload() {
+    this.load.audio('click', 'assets/sfx/click.mp3');
+  }
+
   create() {
     const { ancho, alto } = CONFIG;
 
@@ -21,6 +25,7 @@ export class EscenaPausa extends Phaser.Scene {
       .setOrigin(0.5);
 
     crearBoton(this, ancho / 2, alto * 0.52, 'Continuar', () => {
+      this.sound.resumeAll();
       this.scene.stop();
       this.scene.resume('EscenaJuego');
     });

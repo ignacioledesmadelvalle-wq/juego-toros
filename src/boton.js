@@ -20,6 +20,7 @@ export function crearBoton(scene, x, y, texto, alApretar, opciones = {}) {
   fondo.on('pointerdown', () => contenedor.setScale(0.94));
   fondo.on('pointerup', () => {
     contenedor.setScale(1);
+    scene.sound.play('click', { volume: 0.5 });
     alApretar();
   });
 

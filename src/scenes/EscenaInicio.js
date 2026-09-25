@@ -1,5 +1,6 @@
 import { CONFIG } from '../config.js';
 import { crearBoton } from '../boton.js';
+import { reproducirMusica } from '../musica.js';
 
 export class EscenaInicio extends Phaser.Scene {
   constructor() {
@@ -9,10 +10,14 @@ export class EscenaInicio extends Phaser.Scene {
   preload() {
     this.load.image('fondo-inicio', 'assets/img/fondo-inicio.png');
     this.load.image('logo', 'assets/img/logo.png');
+    this.load.audio('menu', 'assets/music/menu.mp3');
+    this.load.audio('click', 'assets/sfx/click.mp3');
   }
 
   create() {
     const { ancho, alto } = CONFIG;
+
+    reproducirMusica(this, 'menu');
 
     this.add.image(ancho / 2, alto / 2, 'fondo-inicio').setDisplaySize(ancho, alto);
 
