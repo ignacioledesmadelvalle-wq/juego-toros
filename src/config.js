@@ -5,6 +5,7 @@ export const CONFIG = {
 
   velocidadJugador: 260,
   escalaJugador: 0.22, // los dibujos vienen en 512x512, esto los deja de buen tamaño
+  giroMaximoJugador: 80, // grados que se inclina al ir para el costado
 
   escalaPasto: 0.5, // tamaño del mosaico de pasto (512x512 -> 256x256 en pantalla)
 

@@ -51,7 +51,8 @@ export class EscenaJuego extends Phaser.Scene {
 
     this.jugador.setVelocity(dx * CONFIG.velocidadJugador, dy * CONFIG.velocidadJugador);
 
-    if (dx < -0.05) this.jugador.setFlipX(true);
-    else if (dx > 0.05) this.jugador.setFlipX(false);
+    // Se inclina hacia el costado al que camina (sin llegar a quedar cabeza abajo
+    // cuando va para arriba, ya que el dibujo solo mira hacia la cámara).
+    this.jugador.rotation = Phaser.Math.DegToRad(CONFIG.giroMaximoJugador) * dx;
   }
 }
