@@ -4,6 +4,8 @@ export const CONFIG = {
   alto: 720,
 
   velocidadJugador: 260,
+  incrementoVelocidadPorNivel: 6, // el granjero corre un poco más rápido en cada nivel
+  incrementoVelocidadMaximo: 60,
   escalaJugador: 0.22, // los dibujos vienen en 512x512, esto los deja de buen tamaño
   giroMaximoJugador: 80, // grados que se inclina al ir para el costado
 
@@ -13,7 +15,7 @@ export const CONFIG = {
 
   mundo: {
     anchoBase: 2600, // ancho del mapa en el nivel 1
-    incrementoPorNivel: 150, // cuánto más ancho es el mapa por cada nivel
+    incrementoPorNivel: 220, // cuánto más ancho es el mapa por cada nivel (más lugar para esquivar)
     alto: 720,
   },
   margenCasaCueva: 220, // separación desde el borde del mapa
@@ -27,13 +29,14 @@ export const CONFIG = {
     escala: 0.15,
     duracionSigilo: 8000, // ms que dura el efecto silencioso
     distanciaRecoger: 55,
+    nivelesPorBota: 3, // cada 3 niveles aparece un par más de botas en el campo
   },
 
   toro: {
     escala: 0.45,
     tiempoDormidoBase: 14000, // ms hasta que se despierta solo (nivel 1)
-    reduccionPorNivel: 800, // ms menos por cada nivel (se despiertan más rápido)
-    tiempoDormidoMinimo: 5000,
+    reduccionPorNivel: 500, // ms menos por cada nivel (se despiertan más rápido)
+    tiempoDormidoMinimo: 6500,
     tiempoAviso: 1500, // ms mostrando "!" y temblando antes de despertarse del todo
     tiempoBufido: 500, // pausa parado (bufando) antes de cargar
     velocidadCarga: 210,

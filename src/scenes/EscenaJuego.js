@@ -90,9 +90,20 @@ export class EscenaJuego extends Phaser.Scene {
       this.toros.push(new Toro(this, x, y, tiempoDormido));
     }
 
-    // Botas silenciosas en el campo, cerca de la casa.
-    this.botas = [this.add.image(inicioCampo + (finCampo - inicioCampo) * 0.12, centroY + 180, 'botas-silenciosas').setScale(CONFIG.botas.escala)];
+    // Botas silenciosas repartidas por el campo: cada tantos niveles hay un
+    // par más, para compensar que también hay más toros que esquivar.
+    const cantidadBotas = 1 + Math.floor((nivel - 1) / CONFIG.botas.nivelesPorBota);
+    this.botas = [];
+    for (let i = 0; i < cantidadBotas; i++) {
+      const t = (i + 0.5) / (cantidadBotas + 1);
+      const x = inicioCampo + t * (finCampo - inicioCampo);
+      const y = centroY + (i % 2 === 0 ? 300 : -300);
+      this.botas.push(this.add.image(x, y, 'botas-silenciosas').setScale(CONFIG.botas.escala));
+    }
     this.tiempoSigiloRestante = 0;
+
+    // El granjero corre un poco más rápido en los niveles altos.
+    this.velocidadJugador = CONFIG.velocidadJugador + Math.min(CONFIG.incrementoVelocidadMaximo, CONFIG.incrementoVelocidadPorNivel * (nivel - 1));
 
     this.jugador = this.physics.add.sprite(casaX + 120, centroY, 'granjero');
     this.jugador.setScale(CONFIG.escalaJugador);
@@ -255,15 +266,20 @@ export class EscenaJuego extends Phaser.Scene {
       }
     }
 
-    this.jugador.setVelocity(dx * CONFIG.velocidadJugador, dy * CONFIG.velocidadJugador);
+    this.jugador.setVelocity(dx * this.velocidadJugador, dy * this.velocidadJugador);
 
     // Se inclina hacia el costado al que camina (sin llegar a quedar cabeza abajo
     // cuando va para arriba, ya que el dibujo solo mira hacia la cámara).
     this.jugador.rotation = Phaser.Math.DegToRad(CONFIG.giroMaximoJugador) * dx;
 
+    // Si la pestaña estuvo en pausa (por ejemplo, cambiaron de app en la
+    // tablet), el siguiente delta puede ser enorme. Lo topeamos para que
+    // ningún toro se despierte de golpe al volver.
+    const deltaSegura = Math.min(delta, 100);
+
     this.revisarMonedas();
     this.revisarLlegadaACasa();
-    this.revisarBotas(delta);
-    this.revisarToros(delta);
+    this.revisarBotas(deltaSegura);
+    this.revisarToros(deltaSegura);
   }
 }
