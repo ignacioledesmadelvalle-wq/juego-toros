@@ -235,13 +235,15 @@ export class EscenaJuego extends Phaser.Scene {
       if (bota.active && Phaser.Math.Distance.Between(this.jugador.x, this.jugador.y, bota.x, bota.y) < CONFIG.botas.distanciaRecoger) {
         bota.destroy();
         this.sound.play('botas-sfx', { volume: 0.6 });
-        this.tiempoSigiloRestante = CONFIG.botas.duracionSigilo;
+        // Se suma a lo que quedaba: si agarrás otro par mientras ya tenés
+        // botas puestas, el sigilo dura más en vez de reiniciarse.
+        this.tiempoSigiloRestante += CONFIG.botas.duracionSigilo;
       }
     }
 
     if (this.tiempoSigiloRestante > 0) {
       this.tiempoSigiloRestante = Math.max(0, this.tiempoSigiloRestante - delta);
-      const proporcion = this.tiempoSigiloRestante / CONFIG.botas.duracionSigilo;
+      const proporcion = Math.min(1, this.tiempoSigiloRestante / CONFIG.botas.duracionSigilo);
       this.barraSigilo.width = 176 * proporcion;
       this.barraSigiloFondo.setVisible(true);
       this.barraSigilo.setVisible(true);

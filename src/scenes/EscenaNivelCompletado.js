@@ -1,5 +1,6 @@
 import { CONFIG } from '../config.js';
 import { crearBoton } from '../boton.js';
+import { reproducirMusicaUnaVez } from '../musica.js';
 
 export class EscenaNivelCompletado extends Phaser.Scene {
   constructor() {
@@ -20,7 +21,7 @@ export class EscenaNivelCompletado extends Phaser.Scene {
   create() {
     const { ancho, alto } = CONFIG;
 
-    this.sound.play('nivel-completado', { volume: 0.6 });
+    reproducirMusicaUnaVez(this, 'nivel-completado', 0.6);
 
     this.add.rectangle(ancho / 2, alto / 2, ancho, alto, 0x1f3d1a, 0.9);
     this.add

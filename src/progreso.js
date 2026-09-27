@@ -13,6 +13,10 @@ export function guardarNivel(nivel) {
   localStorage.setItem(CLAVE_NIVEL, String(nivel));
 }
 
+export function reiniciarProgreso() {
+  localStorage.removeItem(CLAVE_NIVEL);
+}
+
 export function estaSilenciado() {
   return localStorage.getItem(CLAVE_SILENCIADO) === '1';
 }

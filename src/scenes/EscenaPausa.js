@@ -31,6 +31,7 @@ export class EscenaPausa extends Phaser.Scene {
     });
 
     crearBoton(this, ancho / 2, alto * 0.66, 'Volver al inicio', () => {
+      this.sound.resumeAll();
       this.scene.stop('EscenaJuego');
       this.scene.stop();
       this.scene.start('EscenaInicio');

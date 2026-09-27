@@ -1,6 +1,7 @@
 import { CONFIG } from '../config.js';
 import { crearBoton } from '../boton.js';
 import { guardarNivel } from '../progreso.js';
+import { reproducirMusicaUnaVez } from '../musica.js';
 
 export class EscenaGanaste extends Phaser.Scene {
   constructor() {
@@ -17,7 +18,7 @@ export class EscenaGanaste extends Phaser.Scene {
 
     const { ancho, alto } = CONFIG;
 
-    this.sound.play('ganaste', { volume: 0.6 });
+    reproducirMusicaUnaVez(this, 'ganaste', 0.6);
 
     this.add.rectangle(ancho / 2, alto / 2, ancho, alto, 0x2b1d14, 0.92);
     this.add
